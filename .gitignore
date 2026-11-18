@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.work/
+.test-run/
+*.pdf
+!assets/*.pdf
+.DS_Store

@@ -1,0 +1,446 @@
+/* ============================================================================
+   exam-cram-pack · 复习包 PDF 样式表  v3（校色 + 紧凑版）
+   ----------------------------------------------------------------------------
+   颜色以参考件逐 span 取样为准：
+     · 深海军蓝 #0e3a63 = 部分/章标题、表头文字、目录页码（通栏细线同色）
+     · 亮蓝     #1d4ed8 = 小节标题 + 左侧竖条
+     · 深墨     #0f172a = **加粗**（"可直接背进卷面的表述"）——不是琥珀！
+     · 琥珀     #b45309 = 仅封面副标题 + 封面短横线 + 〔推断〕徽章
+     · 灰       #1f2937 正文 / #64748b 提示竖线 / #cbd5e1 页眉与表格线 / #94a3b8 页脚
+   双引擎共用：WeasyPrint（默认）与 Chrome / Edge headless（回退）。
+   ========================================================================== */
+
+/* ------------------------------------------------------------------ 页面 */
+@page {
+  size: A4;
+  margin: 15mm 14mm 13mm 14mm;
+
+  @top-right {
+    content: "　";                     /* 占位；build_pdf.py 会替换成文档名 */
+    font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "Noto Sans SC", sans-serif;
+    font-size: 8pt;
+    color: #cbd5e1;
+    vertical-align: bottom;
+    padding-bottom: 5mm;
+    white-space: nowrap;
+  }
+
+  @bottom-center {
+    content: counter(page) " / " counter(pages);
+    font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "Noto Sans SC", sans-serif;
+    font-size: 8.5pt;
+    color: #94a3b8;
+    vertical-align: top;
+    padding-top: 5mm;
+  }
+}
+
+/* 封面：满幅、无页眉页脚。仅在存在封面时由脚本追加此规则。 */
+@page coverpage {
+  margin: 0;
+  @top-right { content: none; }
+  @bottom-center { content: none; }
+}
+
+/* ------------------------------------------------------------------ 基础 */
+* { box-sizing: border-box; }
+
+html {
+  /* 字体栈顺序影响页数：SimSun 字面窄、每行容字多；Noto Serif SC 作为
+     macOS / Linux 回退。勿随意调换。 */
+  font-family: "SimSun", "宋体", "Songti SC", "Source Han Serif SC",
+               "Noto Serif SC", serif;
+  font-size: 10pt;
+  line-height: 1.55;
+  color: #1f2937;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+p {
+  margin: 0 0 4pt 0;
+  orphans: 2;
+  widows: 2;
+}
+
+p.tight { margin-bottom: 2.5pt; }
+
+a { color: inherit; text-decoration: none; }
+
+hr {
+  border: none;
+  border-top: 0.6pt solid #e2e8f0;
+  margin: 8pt 0;
+}
+
+pre {
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 8.6pt;
+  line-height: 1.5;
+  background: #f1f5f9;
+  border-left: 2.4pt solid #cbd5e1;
+  padding: 5pt 8pt;
+  margin: 5pt 0 7pt 0;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* 关键：内联 code 的 nowrap 会污染 pre code，必须显式覆盖，否则中文代码块
+   冲出右边界（v2 的实际 bug） */
+pre, pre code {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+pre code {
+  background: none;
+  border: none;
+  color: #1f2937;
+  font-size: 8.6pt;
+  font-weight: 400;
+  padding: 0;
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------ 封面 */
+.cover {
+  page: coverpage;
+  width: 210mm;
+  height: 297mm;
+  padding: 0 20mm;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+.cover-inner { width: 100%; }
+
+.cover-eyebrow {
+  margin-top: 50mm;
+  font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "Noto Sans SC", sans-serif;
+  font-size: 9.5pt;
+  color: #64748b;
+  letter-spacing: 0.06em;
+}
+
+.cover-title {
+  margin-top: 8mm;
+  font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "Noto Sans SC", sans-serif;
+  font-weight: 700;
+  font-size: 26pt;
+  line-height: 1.28;
+  color: #0e3a63;
+  letter-spacing: 0.02em;
+}
+
+.cover-subtitle {
+  margin-top: 7mm;
+  font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "Noto Sans SC", sans-serif;
+  font-size: 15pt;
+  color: #b45309;              /* 琥珀仅在此处 + 封面短横线 */
+  letter-spacing: 0.16em;
+}
+
+.cover-rule {
+  width: 42mm;
+  height: 2pt;
+  background: #b45309;
+  margin: 9mm auto 0 auto;
+}
+
+.cover-points {
+  margin: 11mm auto 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.cover-points li {
+  font-size: 11pt;
+  color: #334155;
+  line-height: 2.15;
+  margin: 0;
+}
+
+.cover-foot {
+  margin-top: auto;
+  padding-bottom: 24mm;
+  font-size: 8.5pt;
+  color: #64748b;
+  line-height: 1.95;
+  text-align: center;
+}
+
+.cover-foot p { margin: 0; }
+
+/* ------------------------------------------------------------------ 目录 */
+.toc-page {
+  break-after: page;
+  page-break-after: always;
+}
+
+.toc-title {
+  font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "Noto Sans SC", sans-serif;
+  font-weight: 700;
+  font-size: 18pt;
+  color: #1d4ed8;
+  text-align: center;
+  letter-spacing: 0.3em;
+  margin: 4mm 0 10mm 0;
+}
+
+.toc-entry {
+  display: flex;
+  align-items: flex-end;
+  margin: 0 0 8pt 0;
+  font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "Noto Sans SC", sans-serif;
+  font-size: 10.3pt;
+  color: #1f2937;
+  text-align: left;
+  line-height: 1.2;
+}
+
+.toc-entry.toc-l2 {
+  font-size: 9.4pt;
+  color: #475569;
+  padding-left: 9mm;
+  margin-bottom: 6pt;
+}
+
+.toc-name {
+  flex: 0 1 auto;
+  padding-bottom: 1.6pt;
+}
+
+.toc-dots {
+  flex: 1 1 auto;
+  min-width: 10mm;
+  margin: 0 5pt 0 8pt;
+  margin-bottom: 3.4pt;
+  border-bottom: 0.9pt dotted #cbd5e1;
+}
+
+.toc-page-no {
+  flex: 0 0 auto;
+  font-size: 9.5pt;
+  color: #0e3a63;              /* 参考件为海军蓝，非琥珀 */
+  padding-bottom: 1.6pt;
+}
+
+/* ------------------------------------------------------------------ 标题 */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "Noto Sans SC", sans-serif;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+/* 一级：部分 / 章 / 附录 —— 新起一页，海军蓝 + 通栏线 */
+h1 {
+  font-size: 16pt;
+  font-weight: 700;
+  color: #0e3a63;
+  letter-spacing: 0.01em;
+  margin: 0 0 10pt 0;
+  padding: 0 0 5pt 0;
+  border-bottom: 1.3pt solid #0e3a63;
+  break-before: page;
+  page-break-before: always;
+}
+
+/* 二级：一、二、三 / x.x —— 亮蓝 + 左侧竖条 */
+h2 {
+  font-size: 12pt;
+  font-weight: 700;
+  color: #1d4ed8;
+  margin: 10pt 0 4.5pt 0;
+  padding-left: 7pt;
+  border-left: 3.6pt solid #1d4ed8;
+  break-before: auto;
+  page-break-before: auto;
+}
+
+/* 三级：考点 / 子节 */
+h3 {
+  font-size: 11pt;
+  font-weight: 700;
+  color: #1d4ed8;
+  margin: 8pt 0 3.5pt 0;
+  padding-left: 6.5pt;
+  border-left: 3pt solid #1d4ed8;
+}
+
+h4 {
+  font-size: 10.4pt;
+  font-weight: 700;
+  color: #334155;
+  margin: 7pt 0 3pt 0;
+  padding-left: 0;
+}
+
+h5, h6 {
+  font-size: 10pt;
+  font-weight: 700;
+  color: #334155;
+  margin: 6pt 0 2.5pt 0;
+}
+
+/* ------------------------------------------------------------------ 强调 */
+/* 深墨 = 参考件加粗的真实颜色（0x0f172a）。琥珀只属于封面，勿再用于正文。 */
+strong, b {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+em, i { font-style: italic; }
+del { color: #94a3b8; }
+
+/* ------------------------------------------------------------------ 徽章 */
+.tag {
+  display: inline-block;
+  font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "Noto Sans SC", sans-serif;
+  font-style: normal;
+  font-size: 7.2pt;
+  font-weight: 700;
+  line-height: 1.35;
+  padding: 1.2pt 3.6pt;
+  border-radius: 2pt;
+  margin: 0 1.2pt;
+  vertical-align: 1pt;
+  white-space: nowrap;
+}
+
+.tag-zt { color: #b91c1c; background: #fee2e2; border: 0.7pt solid #fca5a5; }  /* 真题 */
+.tag-bu { color: #15803d; background: #dcfce7; border: 0.7pt solid #86efac; }  /* 补   */
+.tag-td { color: #b45309; background: #fef3c7; border: 0.7pt solid #fcd34d; }  /* 推断 */
+.tag-hc { color: #9a3412; background: #ffedd5; border: 0.7pt solid #fdba74; }  /* 待核 */
+
+h1 .tag, h2 .tag, h3 .tag, h4 .tag { font-weight: 700; }
+
+/* 行内代码 → 红色小徽章（"高频""地基"等短标记） */
+code {
+  font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "Noto Sans SC", sans-serif;
+  font-size: 7.2pt;
+  font-weight: 700;
+  color: #b91c1c;
+  background: #fee2e2;
+  border: 0.7pt solid #fca5a5;
+  border-radius: 2pt;
+  padding: 1.2pt 3.6pt;
+  margin: 0 1.2pt;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ 引用块 */
+blockquote {
+  margin: 6pt 0 7pt 0;
+  padding: 5.5pt 9pt;
+  background: #f1f5f9;
+  border-left: 3pt solid #64748b;
+  font-size: 9.8pt;
+  line-height: 1.5;
+  color: #1f2937;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+blockquote p { margin: 0 0 3pt 0; line-height: 1.55; }
+blockquote p:last-child { margin-bottom: 0; }
+
+/* ------------------------------------------------------------------ 表格 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;          /* 配合 <colgroup>，两引擎列宽一致 */
+  margin: 5pt 0 8pt 0;
+  font-size: 8.6pt;
+  line-height: 1.42;
+  break-inside: auto;
+}
+
+thead { display: table-header-group; }
+
+tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+th {
+  font-family: "Microsoft YaHei", "微软雅黑", "SimHei", "Noto Sans SC", sans-serif;
+  font-size: 8.6pt;
+  font-weight: 700;
+  color: #0e3a63;              /* 参考件表头为海军蓝，非琥珀 */
+  background: #eef2f7;
+  text-align: left;
+  padding: 2.8pt 4.5pt;
+  border: 0.45pt solid #cbd5e1;
+  vertical-align: middle;
+}
+
+td {
+  padding: 2.6pt 4.5pt;
+  border: 0.45pt solid #cbd5e1;
+  vertical-align: top;
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;             /* 兜底：任何内容都不许横向溢出到相邻列 */
+}
+
+/* 表格内的徽章：保持单行（列宽算法已按徽章实际磅值预留空间）。
+   nowrap 是必须的——一旦允许折行，"〔真题 2024〕"会断成两行、
+   徽章高度翻倍，比溢出更难看。 */
+td .tag, th .tag, td code, th code {
+  white-space: nowrap;
+  max-width: none;
+}
+
+/* 表格内徽章左右外边距收紧，省出宽度 */
+td .tag, th .tag { margin: 0 0.6pt; }
+
+th.al-center, td.al-center { text-align: center; }
+th.al-right,  td.al-right  { text-align: right; }
+
+/* ------------------------------------------------------------------ 列表 */
+ul, ol {
+  margin: 3pt 0 5pt 0;
+  padding-left: 18pt;
+}
+
+li {
+  margin: 0 0 2pt 0;
+  padding-left: 1pt;
+}
+
+li > ul, li > ol { margin: 2pt 0; }
+
+ul.plain { list-style: none; padding-left: 0; }
+
+/* ------------------------------------------------------------------ 米色面板 */
+/* 金句等长有序列表整体加米色底（与参考件一致） */
+.panel-cream {
+  background: #fbf7ef;
+  border: 0.7pt solid #e7dcc8;
+  border-radius: 3pt;
+  padding: 8pt 11pt 5pt 11pt;
+  margin: 6pt 0 8pt 0;
+}
+
+.panel-cream ol,
+.panel-cream ul {
+  margin: 0;
+  padding-left: 16pt;
+}
+
+.panel-cream li {
+  margin-bottom: 3.5pt;
+  line-height: 1.55;
+}
+
+.panel-cream li:last-child { margin-bottom: 1pt; }
